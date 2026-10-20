@@ -1,95 +1,117 @@
-# 上传到 GitHub 操作手册
+# 上传到 GitHub
 
-## 一、前置：安装 Git
-
-你这台机器**目前没有 git**（之前的 winget / curl 都被网络拦截）。
-请在你的终端里任选一种方式装：
-
-**方式 1（推荐，最简单）**
-```powershell
-winget install --id Git.Git -e
-```
-
-**方式 2（官网下载）**
-打开 https://git-scm.com/download/win 下载 64 位安装包，一路下一步。
-
-装完**新开一个终端**，验证：
-```powershell
-git --version
-```
+> **当前进度**：本地已完成 90% —— git 已装、仓库已初始化、24 个文件已提交、SSH 远程已配好。
+> **只剩两步**：① 在 GitHub 网页建仓库 ② 推送。
 
 ---
 
-## 二、创建仓库并首次提交
+## 第一步：在 GitHub 创建仓库（1 分钟）
+
+点这个链接（参数已填好）：
+
+**https://github.com/new?name=desk-widget&description=Windows+桌面+Markdown+日程挂件：单文件+150KB，勾选双向同步，胶囊折叠&visibility=public**
+
+要点：
+- **Repository name**：`desk-widget`
+- **Description**：填上面那段（可自行修改）
+- 选 **Public**
+- ❌ **不要**勾选 "Add a README file"（否则会冲突）
+- 点 **Create repository**
+
+---
+
+## 第二步：推送
 
 ```powershell
 cd C:\Users\yu\Documents\deepseek-harness\default-workspace\desktop-widget
-
-git init
-git add .
-git commit -m "feat: 日程挂件 v1.1.0 初始提交"
-```
-
-> `.gitignore` 已经排除了 `*.exe`、`widget.log`、`widget-config.json`（含本机绝对路径）、`dist/`。
-> 如果你想连 exe 一起提交，把 `.gitignore` 里的 `*.exe` 删掉即可（不推荐，CI 会构建）。
-
----
-
-## 三、创建 GitHub 仓库并推送
-
-1. 打开 https://github.com/new
-2. Repository name：`desk-widget`
-3. Description：`Windows 桌面 Markdown 日程挂件：单文件 150 KB，勾选双向同步，胶囊折叠`
-4. 选 **Public**，**不要**勾选 "Add a README file"
-5. Create repository
-
-然后推送：
-
-```powershell
-git branch -M main
-git remote add origin git@github.com:jintying/desk-widget.git
 git push -u origin main
 ```
 
+你的 SSH 密钥已配好（`~/.ssh/id_ed25519_github`），认证账号是 **jintying**，无需密码。
+
 ---
 
-## 四、发布第一个版本（触发自动构建）
+## 第三步：发布第一个版本（触发自动构建）
 
 ```powershell
-git tag v1.1.0
-git push origin v1.1.0
+git tag v1.2.0
+git push origin v1.2.0
 ```
 
-推送 tag 后，GitHub Actions 会自动：
-1. 生成图标
-2. 编译 `DeskWidget.exe`
-3. 打包 zip
-4. 创建 Release 并附上 exe 和 zip
+推送 tag 后，GitHub Actions 自动执行：
 
-在仓库的 **Actions** 页能看到构建进度，**Releases** 页能看到成品。
+1. 用 `tools/make-icon.ps1` 生成图标
+2. 用 `build.ps1` 编译 `DeskWidget.exe`
+3. 校验产物大小
+4. 打包 `DeskWidget-1.2.0.zip`
+5. 创建 Release，附上 exe 和 zip
+
+在仓库 **Actions** 页看进度，**Releases** 页下载成品。
 
 ---
 
-## 五、上传前建议改的地方
+## 仓库信息
+
+| 项 | 值 |
+| :--- | :--- |
+| 账号 | [jintying](https://github.com/jintying) |
+| 仓库 | `jintying/desk-widget` |
+| 远程地址 | `git@github.com:jintying/desk-widget.git` |
+| 默认分支 | `main` |
+| 已提交 | 24 个文件 |
+| 版本 | v1.2.0 |
+
+---
+
+## 已完成的本地工作
+
+- ✅ `git init` + `git branch -M main`
+- ✅ 首次提交（24 文件，2876 行）
+- ✅ SSH 远程 `origin` 已添加
+- ✅ `.gitignore` 排除 exe / 日志 / 本机配置
+- ✅ `.gitattributes` 统一换行符
+- ✅ 徽章链接已指向 `jintying/desk-widget`
+- ✅ `AssemblyInfo` 公司名 `jintying`，版本 1.2.0.0
+- ✅ `app.manifest` 标识 `jintying.deskwidget`
+
+---
+
+## 上传前可选改动
 
 | 文件 | 改什么 |
 | :--- | :--- |
-| `README.md` | 顶部仓库地址、Demo 截图（已有 `screenshots/widget.png`） |
-| `CHANGELOG.md` | 版本日期按实际改 |
-| `src/AssemblyInfo.cs` | `AssemblyCompany` 改成你的名字/ID |
-| `app.manifest` | `assemblyIdentity name` 可改成你的命名空间 |
+| `README.md` | 补充特色说明、使用场景 |
+| `screenshots/` | 补 `pill.png`（胶囊）、`settings.png`（设置页） |
+| `CHANGELOG.md` | 日期核对 |
+| `app.manifest` | 如需更高 DPI 策略可调 |
 
 ---
 
-## 六、常见问题
+## 补两张截图的方法
 
-**Q：推送要密码？**
-GitHub 已不支持密码，用 Personal Access Token：
-Settings → Developer settings → Personal access tokens → Tokens (classic) → Generate new token，
-勾选 `repo` 权限，用它当密码。
+```powershell
+# 用系统截图：Win + Shift + S，框选后保存
+# 胶囊：启动挂件 → 点 ✕ → 框选蓝色小方块 → screenshots/pill.png
+# 设置页：点 ⚙ → 框选设置窗口 → screenshots/settings.png
+```
 
-**Q：CI 编译失败？**
-检查 `build.ps1` 里的 csc 路径在 windows-latest 上是否存在（默认存在）。
+README 里已预留这两个文件名，补完自动生效。
 
-**Q：想发布打好的 exe 但不想追踪 tag？**
-在 Actions 页手动 Run workflow，产物会出现在 Artifact 里。
+---
+
+## 常见问题
+
+**Q：push 提示 Permission denied (publickey)？**
+SSH 密钥没被 GitHub 认可。检查 `ssh -T git@github.com` 应返回 `Hi jintying!`。
+
+**Q：想改用 HTTPS 推送？**
+```powershell
+git remote set-url origin https://github.com/jintying/desk-widget.git
+```
+需要 Personal Access Token 当密码。
+
+**Q：CI 构建失败？**
+看 Actions 日志。`build.ps1` 依赖 `C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe`，windows-latest 上默认存在。
+
+**Q：不想提交 tag 但想下载 exe？**
+Actions 页手动 Run workflow，产物在 Artifact 里，保留 90 天。
