@@ -18,21 +18,38 @@
 
 ## 快速开始
 
-### 1. 直接运行
+> ⚠️ **源码仓库里没有 `DeskWidget.exe`**。
+> `.gitignore` 排除了 `*.exe`，成品只放在 Release 里（由 GitHub Actions 编译产出）。
+> 所以**不要在这个页面的文件列表里找 exe**，按下面两种方式之一获取。
 
-双击 `DeskWidget.exe`。第一次启动会在同目录生成 `widget-config.json`。
+### 方式 A：下载现成程序（推荐）
 
-### 2. 准备日程文档
+1. 打开 **[最新 Release](https://github.com/jintying/desk-widget/releases/latest)**
+2. 在 **Assets** 里下载 `DeskWidget.exe`（约 150 KB）
+   - 或下载 `DeskWidget-x.y.z.zip`（含 exe、README、示例文档）
+3. 放到任意目录（例如 `D:\Tools\DeskWidget\`），**双击运行**
+4. 首次启动会在 exe 同目录生成 `widget-config.json`
+
+> 若弹出「Windows 已保护你的电脑」或「无法验证发布者」：点「更多信息 → 仍要运行」。
+> 原因：个人项目没有购买代码签名证书，这是 Windows 对未签名程序的常规提示。
+
+### 方式 B：从源码构建
+
+需要 Windows 10/11 + .NET Framework 4.x（系统自带，无需额外安装 SDK）。
+
+```powershell
+git clone https://github.com/jintying/desk-widget.git
+cd desk-widget
+powershell -ExecutionPolicy Bypass -File build.ps1
+```
+
+构建产物 `DeskWidget.exe` 会出现在仓库根目录。
+
+### 准备日程文档
 
 点挂件右上角 **⚙ → 数据源 → 浏览…** 选中你的 `.md` 文件，或者直接编辑 `widget-config.json` 里的 `dataPath`。
 
-文档格式见下方 [日程文档格式](#日程文档格式)。也可以点设置页的 **「生成示例文档…」** 得到一份模板。
-
-### 3. 从源码构建（可选）
-
-```powershell
-powershell -ExecutionPolicy Bypass -File build.ps1
-```
+文档格式见下方 [日程文档格式](#日程文档格式)。也可以点设置页的 **「生成示例文档…」** 得到一份模板，或直接用 [`example/日程示例.md`](example/日程示例.md)。
 
 ---
 
@@ -235,7 +252,7 @@ desktop-widget/
 ├── app.ico                 图标
 ├── build.ps1               一键构建
 ├── widget-config.example.json
-├── DeskWidget.exe          构建产物
+├── DeskWidget.exe          构建产物（不进仓库，见 Release）
 ├── LICENSE                 MIT
 └── README.md
 ```
