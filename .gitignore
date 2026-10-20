@@ -1,0 +1,24 @@
+# 构建产物
+*.exe
+*.pdb
+
+# 运行时生成
+widget.log
+widget-error.log
+crash.log
+
+# 用户配置（含本机绝对路径，不应提交）
+widget-config.json
+
+# 编辑器
+.vs/
+.vscode/
+*.user
+*.suo
+
+# 系统
+Thumbs.db
+desktop.ini
+
+# 构建输出
+dist/

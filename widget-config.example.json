@@ -1,0 +1,14 @@
+{
+  "dataPath": "日程.md",
+  "width": 380,
+  "height": 560,
+  "left": -1,
+  "top": 120,
+  "bgAlpha": 0.82,
+  "fontSize": 13,
+  "bgColor": "#121A26",
+  "accent": "#7C9CFF",
+  "fontFamily": "Microsoft YaHei",
+  "autoStart": false,
+  "startMinimized": false
+}

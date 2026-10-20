@@ -1,0 +1,85 @@
+name: Build & Release
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  build:
+    runs-on: windows-latest
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: 环境信息
+        shell: pwsh
+        run: |
+          Write-Host "OS: $((Get-CimInstance Win32_OperatingSystem).Caption)"
+          Write-Host "架构: $env:PROCESSOR_ARCHITECTURE"
+          $csc = 'C:\Windows\Microsoft.NET\Framework64\v4.0.30319\csc.exe'
+          Write-Host "csc 存在: $(Test-Path $csc)"
+          if (Test-Path $csc) { & $csc /? | Select-Object -First 1 }
+
+      - name: 生成图标
+        shell: pwsh
+        run: |
+          if (Test-Path tools/make-icon.ps1) {
+            pwsh -NoProfile -ExecutionPolicy Bypass -File tools/make-icon.ps1
+          }
+
+      - name: 构建 DeskWidget.exe
+        shell: pwsh
+        run: |
+          pwsh -NoProfile -ExecutionPolicy Bypass -File build.ps1
+
+      - name: 校验产物
+        shell: pwsh
+        run: |
+          $exe = 'DeskWidget.exe'
+          if (-not (Test-Path $exe)) { throw "构建产物不存在：$exe" }
+          $size = [math]::Round((Get-Item $exe).Length / 1KB, 1)
+          Write-Host "产物大小：${size} KB"
+          $v = (Get-Item $exe).VersionInfo
+          Write-Host "文件版本：$($v.FileVersion)"
+
+      - name: 打包
+        shell: pwsh
+        run: |
+          $ver = '${{ github.ref_name }}' -replace '^v', ''
+          if ([string]::IsNullOrWhiteSpace($ver) -or $ver -eq '') { $ver = 'dev' }
+          $stage = "dist/DeskWidget-$ver"
+          New-Item -ItemType Directory -Force -Path $stage | Out-Null
+          Copy-Item DeskWidget.exe, app.ico, README.md, LICENSE, CHANGELOG.md $stage -ErrorAction SilentlyContinue
+          Copy-Item widget-config.example.json $stage -ErrorAction SilentlyContinue
+          Copy-Item example -Destination $stage -Recurse -ErrorAction SilentlyContinue
+          Compress-Archive -Path $stage -DestinationPath "dist/DeskWidget-$ver.zip" -Force
+          Write-Host "打包完成：dist/DeskWidget-$ver.zip"
+          Get-ChildItem dist | Format-Table Name, Length
+
+      - name: 上传构建产物
+        uses: actions/upload-artifact@v4
+        with:
+          name: DeskWidget-${{ github.ref_name }}
+          path: |
+            DeskWidget.exe
+            dist/*.zip
+          if-no-files-found: error
+
+      - name: 发布 Release
+        if: startsWith(github.ref, 'refs/tags/v')
+        uses: softprops/action-gh-release@v2
+        with:
+          name: ${{ github.ref_name }}
+          draft: false
+          prerelease: false
+          generate_release_notes: true
+          body_path: CHANGELOG.md
+          files: |
+            DeskWidget.exe
+            dist/*.zip
